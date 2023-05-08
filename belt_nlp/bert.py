@@ -81,7 +81,7 @@ class BertClassifier(ABC):
 
         self.loss_hist = []
 
-        mlflow.set_experiment(experiment_name)
+        # mlflow.set_experiment(experiment_name)
         with mlflow.start_run() as run:
             for epoch in tqdm(range(epochs)):
                 self._train_single_epoch(dataloader, optimizer)
