@@ -55,8 +55,6 @@ class BertClassifier(ABC):
         self.learning_rate = learning_rate
         self.epochs = epochs
         self._params = {"batch_size": self.batch_size, "learning_rate": self.learning_rate, "epochs": self.epochs}
-        self.loss_hist = []
-        self.train_step = 0
 
         self.device = device
         self.many_gpus = many_gpus
@@ -79,18 +77,11 @@ class BertClassifier(ABC):
             dataset, sampler=RandomSampler(dataset), batch_size=self.batch_size, collate_fn=self.collate_fn
         )
 
-        self.loss_hist = []
 
         # mlflow.set_experiment(experiment_name)
         with mlflow.start_run() as run:
             for epoch in tqdm(range(epochs)):
                 self._train_single_epoch(dataloader, optimizer)
-
-
-
-        client = MlflowClient()
-        client.log_batch(mlflow.active_run().info.run_id, 
-            metrics=[Metric(key="loss_list", value=val[0], timestamp=val[1], step=0) for val in self.loss_hist])
 
     def predict(self, x: list[str], batch_size: Optional[int] = None) -> list[tuple[bool, float]]:
         if not batch_size:
@@ -144,8 +135,6 @@ class BertClassifier(ABC):
 
             # Log mlflow metrics
             mlflow.log_metric("loss", loss)
-            self.loss_hist.append((loss, self.train_step))
-            self.train_step += 1
 
     @abstractmethod
     def _evaluate_single_batch(self, batch: tuple[Tensor]) -> Tensor:
