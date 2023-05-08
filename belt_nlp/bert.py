@@ -143,7 +143,6 @@ class BertClassifier(ABC):
             optimizer.step()
 
             # Log mlflow metrics
-            print("Loss: ", loss)
             mlflow.log_metric("loss", loss)
             self.loss_hist.append((loss, self.train_step))
             self.train_step += 1
