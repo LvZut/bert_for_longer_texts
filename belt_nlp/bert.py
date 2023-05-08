@@ -10,7 +10,7 @@ from torch.nn import BCELoss, DataParallel, Module, Linear, Sigmoid
 from torch.optim import AdamW, Optimizer
 from torch.utils.data import Dataset, RandomSampler, SequentialSampler, DataLoader
 from transformers import AutoModel, AutoTokenizer, BatchEncoding, BertModel, PreTrainedTokenizerBase, RobertaModel
-
+import mlflow
 
 class BertClassifier(ABC):
     """
@@ -122,6 +122,10 @@ class BertClassifier(ABC):
             loss = cross_entropy(predictions, labels)
             loss.backward()
             optimizer.step()
+
+            # Log mlflow metrics
+            mlflow.log_metric("loss", loss)
+
 
     @abstractmethod
     def _evaluate_single_batch(self, batch: tuple[Tensor]) -> Tensor:
