@@ -60,7 +60,7 @@ class BertClassifier(ABC):
         if device.startswith("cuda") and many_gpus:
             self.neural_network = DataParallel(self.neural_network)
 
-    def fit(self, x_train: list[str], y_train: list[bool], epochs: Optional[int] = None) -> None:
+    def fit(self, x_train: list[str], y_train: list[bool], epochs: Optional[int] = None, experiment_name="mlflow-experiment") -> None:
         if not epochs:
             epochs = self.epochs
         optimizer = AdamW(self.neural_network.parameters(), lr=self.learning_rate)
@@ -70,8 +70,11 @@ class BertClassifier(ABC):
         dataloader = DataLoader(
             dataset, sampler=RandomSampler(dataset), batch_size=self.batch_size, collate_fn=self.collate_fn
         )
-        for epoch in range(epochs):
-            self._train_single_epoch(dataloader, optimizer)
+
+        mlflow.set_experiment(experiment_name)
+        with mlflow.start_run() as run:
+            for epoch in range(epochs):
+                self._train_single_epoch(dataloader, optimizer)
 
     def predict(self, x: list[str], batch_size: Optional[int] = None) -> list[tuple[bool, float]]:
         if not batch_size:
